@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mobility Lens</string>
+    <string name="app_intro">Six dimensions shape every mobile design decision. Step through each one and see how it applies to your own project.</string>
+    <string name="dimension_label">Dimension</string>
+    <string name="previous_button">Previous</string>
+    <string name="next_button">Next</string>
+    <string name="app_name_hint">App or feature you are designing</string>
+    <string name="analyze_button">Analyze Dimension</string>
+    <string name="analyze_helper">Enter your app name to see how this dimension applies</string>
+    <string name="blank_input_error">Enter an app or feature name first.</string>
+    <string name="analyze_success">\"%1$s\" must address dimension %2$d as a core mobile design concern.</string>
+    <string name="of_label">of</string>
+
+    <!-- Dimension names -->
+    <string name="dim1_name">Input &amp; Interaction</string>
+    <string name="dim2_name">Screen Size, Orientation &amp; Density</string>
+    <string name="dim3_name">Lifecycle &amp; Resource Constraints</string>
+    <string name="dim4_name">Context Awareness</string>
+    <string name="dim5_name">Usage Patterns</string>
+    <string name="dim6_name">Security &amp; Privacy Expectations</string>
+
+    <!-- Dimension descriptions -->
+    <string name="dim1_desc">Mobile users interact primarily through touch: taps, swipes, pinches, and long presses replace the precision of a mouse cursor. Voice input and hardware sensors add further variety, but finger-sized targets and imprecise gestures are the baseline assumption.</string>
+    <string name="dim2_desc">Phone screens range from compact 4-inch displays to large 7-inch phablets, and the same device can switch between portrait and landscape at any moment. Pixel density varies widely, so layouts must adapt rather than assume a fixed canvas.</string>
+    <string name="dim3_desc">The OS can pause, stop, or terminate any app at any time to reclaim memory or battery. Users suspend apps by taking calls, switching away, or simply pocketing their phones, expecting the app to resume exactly where it left off.</string>
+    <string name="dim4_desc">A mobile device knows where it is, what network it is on, what time it is, and often what the user is doing (walking, driving, at home). Apps can read and react to this context in ways a desktop application never could.</string>
+    <string name="dim5_desc">Mobile sessions are typically short, frequent, and task-focused—a quick check of messages, a fast lookup, a captured photo. Users pick up a phone dozens of times a day and complete one thing before putting it down, rather than settling in for a long session.</string>
+    <string name="dim6_desc">A smartphone is deeply personal: it holds contacts, location history, health data, financial information, and private messages. Users and OS vendors both expect apps to request only the permissions they actually need and to handle data transparently.</string>
+
+    <!-- Dimension implications -->
+    <string name="dim1_impl">Implication: Make all interactive targets at least 48 dp tall and wide. Favor simple gestures (tap, back-swipe) over complex multi-touch chords, and provide visible affordances so users know what is tappable.</string>
+    <string name="dim2_impl">Implication: Use responsive layouts built from flexible columns rather than fixed pixel widths. Test in both portrait and landscape, and let text scale with system font-size preferences to support accessibility.</string>
+    <string name="dim3_impl">Implication: Save meaningful state (scroll position, draft text, current item) whenever the app is paused or stopped. Use ViewModel to survive configuration changes and WorkManager for tasks that must finish even if the app is killed.</string>
+    <string name="dim4_impl">Implication: Surface contextually relevant information at the right moment—show an ETA when the user is near a destination, or simplify the UI for a noisy environment. Always request location or sensor access only when needed and explain why.</string>
+    <string name="dim5_impl">Implication: Design for quick-start and graceful interruption. The most important action should be reachable within one or two taps from the home screen, and the app should save progress automatically so an interrupted task can be resumed instantly.</string>
+    <string name="dim6_impl">Implication: Request the minimum necessary permissions, explain each request in plain language, and never access sensitive data silently. Store personal data encrypted, apply network security configuration, and surface clear privacy controls to the user.</string>
+</resources>
