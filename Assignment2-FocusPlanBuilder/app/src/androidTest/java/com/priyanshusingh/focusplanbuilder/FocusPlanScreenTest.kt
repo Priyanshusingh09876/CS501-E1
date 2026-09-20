@@ -1,147 +1,318 @@
 package com.priyanshusingh.focusplanbuilder
 
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.junit4.ComposeContentTestRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import com.priyanshusingh.focusplanbuilder.ui.FocusPlanRoute
+import com.priyanshusingh.focusplanbuilder.ui.FocusPlanTestTags
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * On-device / emulator UI tests exercising FocusPlanRoute + FocusPlanScreen
- * together, the way a real user would. These complement the model-layer
- * unit tests (DurationCategoryCalculatorTest, BreakRecommenderTest,
- * MinutesParsingTest, SubjectValidationTest, SummaryBuilderTest,
- * RequiredTestingTableTest)
- * (which only tests pure functions) by verifying wiring: that typing into a
- * field actually changes the button's enabled state, that invalid input
- * never crashes the app, and that editing a field after a plan is created
- * removes the old result card.
+ * On-device tests that exercise FocusPlanRoute + FocusPlanScreen together, the
+ * way a user would. They cover the wiring the pure unit tests cannot: typing
+ * changes the button, invalid input never crashes, editing removes the old
+ * card, and rememberSaveable restores the fields after recreation.
  *
- * Run via: ./gradlew connectedDebugAndroidTest (requires an emulator/device)
+ * Nodes are located by test tag (see FocusPlanTestTags) rather than by visible
+ * text so the same string appearing in a field and on the card is never
+ * ambiguous.
+ *
+ * Run with: ./gradlew connectedDebugAndroidTest  (needs an emulator or device)
  */
 class FocusPlanScreenTest {
 
     @get:Rule
-    val composeTestRule = createComposeRule()
+    val rule = createComposeRule()
 
-    private fun setContent() {
-        composeTestRule.setContent {
-            FocusPlanRoute()
-        }
+    // ---------------------------------------------------------- helpers
+
+    private fun ComposeContentTestRule.subject(): SemanticsNodeInteraction =
+        onNodeWithTag(FocusPlanTestTags.SUBJECT_FIELD)
+
+    private fun ComposeContentTestRule.minutes(): SemanticsNodeInteraction =
+        onNodeWithTag(FocusPlanTestTags.MINUTES_FIELD)
+
+    private fun ComposeContentTestRule.createButton(): SemanticsNodeInteraction =
+        onNodeWithTag(FocusPlanTestTags.CREATE_BUTTON)
+
+    private fun ComposeContentTestRule.card(): SemanticsNodeInteraction =
+        onNodeWithTag(FocusPlanTestTags.RESULT_CARD)
+
+    private fun launch() {
+        rule.setContent { FocusPlanRoute() }
+    }
+
+    private fun enter(subject: String, minutes: String) {
+        if (subject.isNotEmpty()) rule.subject().performTextInput(subject)
+        if (minutes.isNotEmpty()) rule.minutes().performTextInput(minutes)
+    }
+
+    // ------------------------------------------------- required table rows
+
+    @Test
+    fun blankSubject_25minutes_buttonDisabled() {
+        launch()
+        enter("", "25")
+        rule.createButton().assertIsNotEnabled()
     }
 
     @Test
-    fun button_isDisabled_whenSubjectIsBlank() {
-        setContent()
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("25")
-        composeTestRule.onNodeWithText("Create plan").assertIsNotEnabled()
+    fun kotlin_blankMinutes_buttonDisabled() {
+        launch()
+        enter("Kotlin", "")
+        rule.createButton().assertIsNotEnabled()
     }
 
     @Test
-    fun button_isDisabled_whenMinutesIsBlank() {
-        setContent()
-        composeTestRule.onNodeWithText("Study subject").performTextInput("Kotlin")
-        composeTestRule.onNodeWithText("Create plan").assertIsNotEnabled()
+    fun kotlin_abc_buttonDisabled_andNoCrash() {
+        launch()
+        enter("Kotlin", "abc")
+        // Reaching this assertion proves toIntOrNull() prevented a crash.
+        rule.createButton().assertIsNotEnabled()
+        rule.minutes().assertTextContains("Enter whole minutes using digits only.")
     }
 
     @Test
-    fun button_isDisabled_andAppDoesNotCrash_onNonNumericMinutes() {
-        setContent()
-        composeTestRule.onNodeWithText("Study subject").performTextInput("Kotlin")
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("abc")
-        // If the app were still standing at this assertion, toIntOrNull()
-        // successfully prevented a NumberFormatException crash.
-        composeTestRule.onNodeWithText("Create plan").assertIsNotEnabled()
+    fun kotlin_9_buttonDisabled() {
+        launch()
+        enter("Kotlin", "9")
+        rule.createButton().assertIsNotEnabled()
     }
 
     @Test
-    fun button_isDisabled_forNineMinutes_andEnabled_forTenMinutes() {
-        setContent()
-        composeTestRule.onNodeWithText("Study subject").performTextInput("Kotlin")
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("9")
-        composeTestRule.onNodeWithText("Create plan").assertIsNotEnabled()
-
-        composeTestRule.onNodeWithText("9").performTextClearance()
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("10")
-        composeTestRule.onNodeWithText("Create plan").assertIsEnabled()
+    fun kotlin_10_quickReview_5minuteBreak() {
+        launch()
+        enter("Kotlin", "10")
+        rule.createButton().assertIsEnabled().performClick()
+        assertCardShows("Kotlin", 10, "Quick review", 5)
     }
 
     @Test
-    fun button_isDisabled_forOneEightyOne_butEnabled_forOneEighty() {
-        setContent()
-        composeTestRule.onNodeWithText("Study subject").performTextInput("Kotlin")
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("181")
-        composeTestRule.onNodeWithText("Create plan").assertIsNotEnabled()
-
-        composeTestRule.onNodeWithText("181").performTextClearance()
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("180")
-        composeTestRule.onNodeWithText("Create plan").assertIsEnabled()
+    fun kotlin_29_quickReview_5minuteBreak() {
+        launch()
+        enter("Kotlin", "29")
+        rule.createButton().performClick()
+        assertCardShows("Kotlin", 29, "Quick review", 5)
     }
 
     @Test
-    fun resultCard_appearsAfterCreatingPlan_andShowsExpectedValues() {
-        setContent()
-        composeTestRule.onNodeWithText("Study subject").performTextInput("Compose State")
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("45")
-        composeTestRule.onNodeWithText("Create plan").performClick()
-
-        composeTestRule.onNodeWithText("Compose State").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Duration: 45 minutes").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Category: Focused session").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Recommended break: 10 minutes").assertIsDisplayed()
-        composeTestRule.onNodeWithText(
-            "Study Compose State for 45 minutes, and then take a 10-minute break."
-        ).assertIsDisplayed()
+    fun kotlin_30_focusedSession_10minuteBreak() {
+        launch()
+        enter("Kotlin", "30")
+        rule.createButton().performClick()
+        assertCardShows("Kotlin", 30, "Focused session", 10)
     }
 
     @Test
-    fun resultCard_disappears_whenSubjectIsEditedAfterPlanCreated() {
-        setContent()
-        composeTestRule.onNodeWithText("Study subject").performTextInput("Kotlin")
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("45")
-        composeTestRule.onNodeWithText("Create plan").performClick()
-        composeTestRule.onNodeWithText("Category: Focused session").assertIsDisplayed()
-
-        // Editing the subject after a plan exists must remove the old card.
-        composeTestRule.onNodeWithText("Kotlin").performTextInput("2")
-
-        composeTestRule.onNodeWithText("Category: Focused session")
-            .assertDoesNotExistOrIsNotDisplayed()
+    fun kotlin_60_focusedSession_10minuteBreak() {
+        launch()
+        enter("Kotlin", "60")
+        rule.createButton().performClick()
+        assertCardShows("Kotlin", 60, "Focused session", 10)
     }
 
     @Test
-    fun resultCard_disappears_whenMinutesIsEditedAfterPlanCreated() {
-        setContent()
-        composeTestRule.onNodeWithText("Study subject").performTextInput("Kotlin")
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("45")
-        composeTestRule.onNodeWithText("Create plan").performClick()
-        composeTestRule.onNodeWithText("Category: Focused session").assertIsDisplayed()
-
-        composeTestRule.onNodeWithText("45").performTextClearance()
-        composeTestRule.onNodeWithText("Minutes available (10-180)").performTextInput("60")
-
-        composeTestRule.onNodeWithText("Category: Focused session")
-            .assertDoesNotExistOrIsNotDisplayed()
-        // A brand-new plan for the same subject/60 minutes was not created
-        // automatically -- the user must press the button again.
+    fun kotlin_61_extendedSession_15minuteBreak() {
+        launch()
+        enter("Kotlin", "61")
+        rule.createButton().performClick()
+        assertCardShows("Kotlin", 61, "Extended session", 15)
     }
-}
 
-/**
- * Small helper so a "should not be visible" assertion reads clearly whether
- * the node was removed from the tree entirely or is merely off-screen.
- */
-private fun androidx.compose.ui.test.SemanticsNodeInteraction.assertDoesNotExistOrIsNotDisplayed() {
-    try {
-        this.assertIsDisplayed()
-        throw AssertionError("Expected node to not be displayed, but it was.")
-    } catch (expected: AssertionError) {
-        // Node either does not exist or is not displayed -- both are acceptable.
+    @Test
+    fun kotlin_180_extendedSession_15minuteBreak() {
+        launch()
+        enter("Kotlin", "180")
+        rule.createButton().performClick()
+        assertCardShows("Kotlin", 180, "Extended session", 15)
+    }
+
+    @Test
+    fun kotlin_181_buttonDisabled() {
+        launch()
+        enter("Kotlin", "181")
+        rule.createButton().assertIsNotEnabled()
+        rule.minutes().assertTextContains("Maximum is 180 minutes. 181 is too long.")
+    }
+
+    // ------------------------------------------------ additional checks
+
+    @Test
+    fun resultCard_isNotVisible_beforeFirstPlan() {
+        launch()
+        rule.card().assertDoesNotExist()
+        enter("Kotlin", "45")
+        rule.card().assertDoesNotExist()
+    }
+
+    @Test
+    fun resultCard_showsAssignmentExample_exactly() {
+        launch()
+        enter("Compose State", "45")
+        rule.createButton().performClick()
+
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals("Compose State")
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_DURATION).assertTextEquals("Duration: 45 minutes")
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Focused session")
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_BREAK).assertTextEquals("Recommended break: 10 minutes")
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUMMARY)
+            .assertTextEquals("Study Compose State for 45 minutes, and then take a 10-minute break.")
+    }
+
+    @Test
+    fun subjectIsCleaned_onTheCard() {
+        launch()
+        enter("   Compose   state  ", "45")
+        rule.createButton().performClick()
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals("Compose state")
+    }
+
+    @Test
+    fun erasingMinutes_afterPlan_doesNotCrash_andDisablesButton() {
+        launch()
+        enter("Kotlin", "45")
+        rule.createButton().performClick()
+        rule.card().assertIsDisplayed()
+
+        rule.minutes().performTextClearance()
+
+        rule.createButton().assertIsNotEnabled()
+        rule.card().assertDoesNotExist()
+    }
+
+    @Test
+    fun editingSubject_afterPlan_removesOldCard() {
+        launch()
+        enter("Kotlin", "45")
+        rule.createButton().performClick()
+        rule.card().assertIsDisplayed()
+
+        rule.subject().performTextInput(" 2")
+
+        rule.card().assertDoesNotExist()
+        // The button is still enabled (input is still valid) but no new plan
+        // appears until the user taps it again.
+        rule.createButton().assertIsEnabled()
+    }
+
+    @Test
+    fun editingMinutes_afterPlan_removesOldCard_andNewPlanNeedsAnotherTap() {
+        launch()
+        enter("Kotlin", "45")
+        rule.createButton().performClick()
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Focused session")
+
+        rule.minutes().performTextReplacement("90")
+        rule.card().assertDoesNotExist()
+
+        rule.createButton().performClick()
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Extended session")
+    }
+
+    @Test
+    fun buttonEnabledState_followsInputAutomatically() {
+        launch()
+        rule.createButton().assertIsNotEnabled()
+
+        rule.subject().performTextInput("Kotlin")
+        rule.createButton().assertIsNotEnabled()
+
+        rule.minutes().performTextInput("9")
+        rule.createButton().assertIsNotEnabled()
+
+        rule.minutes().performTextReplacement("10")
+        rule.createButton().assertIsEnabled()
+
+        rule.minutes().performTextReplacement("181")
+        rule.createButton().assertIsNotEnabled()
+
+        rule.minutes().performTextReplacement("180")
+        rule.createButton().assertIsEnabled()
+
+        rule.subject().performTextClearance()
+        rule.createButton().assertIsNotEnabled()
+    }
+
+    @Test
+    fun quickPickChip_fillsMinutes_andEnablesButton() {
+        launch()
+        rule.subject().performTextInput("Databases")
+        rule.onNodeWithTag("${FocusPlanTestTags.QUICK_PICK_PREFIX}45").performClick()
+
+        rule.minutes().assertTextContains("45")
+        rule.createButton().assertIsEnabled().performClick()
+        assertCardShows("Databases", 45, "Focused session", 10)
+    }
+
+    @Test
+    fun startOver_clearsEverything() {
+        launch()
+        enter("Kotlin", "45")
+        rule.createButton().performClick()
+        rule.card().assertIsDisplayed()
+
+        rule.onNodeWithTag(FocusPlanTestTags.START_OVER_BUTTON).performClick()
+
+        rule.card().assertDoesNotExist()
+        rule.createButton().assertIsNotEnabled()
+    }
+
+    // -------------------------------------------------- saved state
+
+    @Test
+    fun inputs_andPlan_surviveActivityRecreation() {
+        val restorationTester = StateRestorationTester(rule)
+        restorationTester.setContent { FocusPlanRoute() }
+
+        enter("Kotlin", "45")
+        rule.createButton().performClick()
+        rule.card().assertIsDisplayed()
+
+        // Simulates the save/restore cycle that a rotation triggers.
+        restorationTester.emulateSavedInstanceStateRestore()
+
+        rule.subject().assertTextContains("Kotlin")
+        rule.minutes().assertTextContains("45")
+        rule.createButton().assertIsEnabled()
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUMMARY)
+            .assertTextEquals("Study Kotlin for 45 minutes, and then take a 10-minute break.")
+    }
+
+    @Test
+    fun invalidInputs_alsoSurviveRecreation_withoutCrashing() {
+        val restorationTester = StateRestorationTester(rule)
+        restorationTester.setContent { FocusPlanRoute() }
+
+        enter("   ", "abc")
+        restorationTester.emulateSavedInstanceStateRestore()
+
+        rule.minutes().assertTextContains("abc")
+        rule.createButton().assertIsNotEnabled()
+    }
+
+    // ---------------------------------------------------------- assertions
+
+    private fun assertCardShows(subject: String, minutes: Int, category: String, breakMinutes: Int) {
+        rule.card().assertIsDisplayed()
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals(subject)
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_DURATION).assertTextEquals("Duration: $minutes minutes")
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: $category")
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_BREAK)
+            .assertTextEquals("Recommended break: $breakMinutes minutes")
+        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUMMARY).assertTextEquals(
+            "Study $subject for $minutes minutes, and then take a $breakMinutes-minute break."
+        )
     }
 }
