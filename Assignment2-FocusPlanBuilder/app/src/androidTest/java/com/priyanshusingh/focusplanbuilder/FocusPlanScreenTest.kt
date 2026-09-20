@@ -11,6 +11,7 @@ import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -28,6 +29,12 @@ import org.junit.Test
  * Nodes are located by test tag (see FocusPlanTestTags) rather than by visible
  * text so the same string appearing in a field and on the card is never
  * ambiguous.
+ *
+ * The screen is a vertically scrolling Column, so on a phone the result card
+ * (and, with the keyboard open, even the Create button) can sit below the fold.
+ * `assertIsDisplayed()` fails for a node that exists but is off-screen, and a
+ * click aimed below the viewport is dropped, so every helper here scrolls the
+ * target into view first with `performScrollTo()`.
  *
  * Run with: ./gradlew connectedDebugAndroidTest  (needs an emulator or device)
  */
@@ -49,6 +56,20 @@ class FocusPlanScreenTest {
 
     private fun ComposeContentTestRule.card(): SemanticsNodeInteraction =
         onNodeWithTag(FocusPlanTestTags.RESULT_CARD)
+
+    /** Scrolls the Create button into view, then taps it. */
+    private fun clickCreate() {
+        rule.createButton().performScrollTo().performClick()
+    }
+
+    /** Scrolls the result card into view and asserts it is actually visible. */
+    private fun assertCardDisplayed() {
+        rule.card().performScrollTo().assertIsDisplayed()
+    }
+
+    /** A card node (subject line, summary, ...) scrolled into view first. */
+    private fun cardNode(tag: String): SemanticsNodeInteraction =
+        rule.onNodeWithTag(tag).performScrollTo()
 
     private fun launch() {
         rule.setContent { FocusPlanRoute() }
@@ -95,7 +116,8 @@ class FocusPlanScreenTest {
     fun kotlin_10_quickReview_5minuteBreak() {
         launch()
         enter("Kotlin", "10")
-        rule.createButton().assertIsEnabled().performClick()
+        rule.createButton().assertIsEnabled()
+        clickCreate()
         assertCardShows("Kotlin", 10, "Quick review", 5)
     }
 
@@ -103,7 +125,7 @@ class FocusPlanScreenTest {
     fun kotlin_29_quickReview_5minuteBreak() {
         launch()
         enter("Kotlin", "29")
-        rule.createButton().performClick()
+        clickCreate()
         assertCardShows("Kotlin", 29, "Quick review", 5)
     }
 
@@ -111,7 +133,7 @@ class FocusPlanScreenTest {
     fun kotlin_30_focusedSession_10minuteBreak() {
         launch()
         enter("Kotlin", "30")
-        rule.createButton().performClick()
+        clickCreate()
         assertCardShows("Kotlin", 30, "Focused session", 10)
     }
 
@@ -119,7 +141,7 @@ class FocusPlanScreenTest {
     fun kotlin_60_focusedSession_10minuteBreak() {
         launch()
         enter("Kotlin", "60")
-        rule.createButton().performClick()
+        clickCreate()
         assertCardShows("Kotlin", 60, "Focused session", 10)
     }
 
@@ -127,7 +149,7 @@ class FocusPlanScreenTest {
     fun kotlin_61_extendedSession_15minuteBreak() {
         launch()
         enter("Kotlin", "61")
-        rule.createButton().performClick()
+        clickCreate()
         assertCardShows("Kotlin", 61, "Extended session", 15)
     }
 
@@ -135,7 +157,7 @@ class FocusPlanScreenTest {
     fun kotlin_180_extendedSession_15minuteBreak() {
         launch()
         enter("Kotlin", "180")
-        rule.createButton().performClick()
+        clickCreate()
         assertCardShows("Kotlin", 180, "Extended session", 15)
     }
 
@@ -161,13 +183,13 @@ class FocusPlanScreenTest {
     fun resultCard_showsAssignmentExample_exactly() {
         launch()
         enter("Compose State", "45")
-        rule.createButton().performClick()
+        clickCreate()
 
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals("Compose State")
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_DURATION).assertTextEquals("Duration: 45 minutes")
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Focused session")
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_BREAK).assertTextEquals("Recommended break: 10 minutes")
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUMMARY)
+        cardNode(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals("Compose State")
+        cardNode(FocusPlanTestTags.RESULT_DURATION).assertTextEquals("Duration: 45 minutes")
+        cardNode(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Focused session")
+        cardNode(FocusPlanTestTags.RESULT_BREAK).assertTextEquals("Recommended break: 10 minutes")
+        cardNode(FocusPlanTestTags.RESULT_SUMMARY)
             .assertTextEquals("Study Compose State for 45 minutes, and then take a 10-minute break.")
     }
 
@@ -175,16 +197,16 @@ class FocusPlanScreenTest {
     fun subjectIsCleaned_onTheCard() {
         launch()
         enter("   Compose   state  ", "45")
-        rule.createButton().performClick()
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals("Compose state")
+        clickCreate()
+        cardNode(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals("Compose state")
     }
 
     @Test
     fun erasingMinutes_afterPlan_doesNotCrash_andDisablesButton() {
         launch()
         enter("Kotlin", "45")
-        rule.createButton().performClick()
-        rule.card().assertIsDisplayed()
+        clickCreate()
+        assertCardDisplayed()
 
         rule.minutes().performTextClearance()
 
@@ -196,8 +218,8 @@ class FocusPlanScreenTest {
     fun editingSubject_afterPlan_removesOldCard() {
         launch()
         enter("Kotlin", "45")
-        rule.createButton().performClick()
-        rule.card().assertIsDisplayed()
+        clickCreate()
+        assertCardDisplayed()
 
         rule.subject().performTextInput(" 2")
 
@@ -211,14 +233,14 @@ class FocusPlanScreenTest {
     fun editingMinutes_afterPlan_removesOldCard_andNewPlanNeedsAnotherTap() {
         launch()
         enter("Kotlin", "45")
-        rule.createButton().performClick()
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Focused session")
+        clickCreate()
+        cardNode(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Focused session")
 
         rule.minutes().performTextReplacement("90")
         rule.card().assertDoesNotExist()
 
-        rule.createButton().performClick()
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Extended session")
+        clickCreate()
+        cardNode(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: Extended session")
     }
 
     @Test
@@ -249,10 +271,11 @@ class FocusPlanScreenTest {
     fun quickPickChip_fillsMinutes_andEnablesButton() {
         launch()
         rule.subject().performTextInput("Databases")
-        rule.onNodeWithTag("${FocusPlanTestTags.QUICK_PICK_PREFIX}45").performClick()
+        rule.onNodeWithTag("${FocusPlanTestTags.QUICK_PICK_PREFIX}45").performScrollTo().performClick()
 
         rule.minutes().assertTextContains("45")
-        rule.createButton().assertIsEnabled().performClick()
+        rule.createButton().assertIsEnabled()
+        clickCreate()
         assertCardShows("Databases", 45, "Focused session", 10)
     }
 
@@ -260,10 +283,10 @@ class FocusPlanScreenTest {
     fun startOver_clearsEverything() {
         launch()
         enter("Kotlin", "45")
-        rule.createButton().performClick()
-        rule.card().assertIsDisplayed()
+        clickCreate()
+        assertCardDisplayed()
 
-        rule.onNodeWithTag(FocusPlanTestTags.START_OVER_BUTTON).performClick()
+        rule.onNodeWithTag(FocusPlanTestTags.START_OVER_BUTTON).performScrollTo().performClick()
 
         rule.card().assertDoesNotExist()
         rule.createButton().assertIsNotEnabled()
@@ -277,8 +300,8 @@ class FocusPlanScreenTest {
         restorationTester.setContent { FocusPlanRoute() }
 
         enter("Kotlin", "45")
-        rule.createButton().performClick()
-        rule.card().assertIsDisplayed()
+        clickCreate()
+        assertCardDisplayed()
 
         // Simulates the save/restore cycle that a rotation triggers.
         restorationTester.emulateSavedInstanceStateRestore()
@@ -286,7 +309,7 @@ class FocusPlanScreenTest {
         rule.subject().assertTextContains("Kotlin")
         rule.minutes().assertTextContains("45")
         rule.createButton().assertIsEnabled()
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUMMARY)
+        cardNode(FocusPlanTestTags.RESULT_SUMMARY)
             .assertTextEquals("Study Kotlin for 45 minutes, and then take a 10-minute break.")
     }
 
@@ -305,13 +328,13 @@ class FocusPlanScreenTest {
     // ---------------------------------------------------------- assertions
 
     private fun assertCardShows(subject: String, minutes: Int, category: String, breakMinutes: Int) {
-        rule.card().assertIsDisplayed()
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals(subject)
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_DURATION).assertTextEquals("Duration: $minutes minutes")
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: $category")
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_BREAK)
+        assertCardDisplayed()
+        cardNode(FocusPlanTestTags.RESULT_SUBJECT).assertTextEquals(subject)
+        cardNode(FocusPlanTestTags.RESULT_DURATION).assertTextEquals("Duration: $minutes minutes")
+        cardNode(FocusPlanTestTags.RESULT_CATEGORY).assertTextEquals("Category: $category")
+        cardNode(FocusPlanTestTags.RESULT_BREAK)
             .assertTextEquals("Recommended break: $breakMinutes minutes")
-        rule.onNodeWithTag(FocusPlanTestTags.RESULT_SUMMARY).assertTextEquals(
+        cardNode(FocusPlanTestTags.RESULT_SUMMARY).assertTextEquals(
             "Study $subject for $minutes minutes, and then take a $breakMinutes-minute break."
         )
     }
