@@ -1,3 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.FocusPlanBuilder" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+        Only the platform launch theme lives here. Every visible pixel of the
+        app is drawn by Jetpack Compose (see ui/theme/Theme.kt); this style just
+        keeps the system from drawing a legacy ActionBar behind it.
+    -->
+    <style name="Theme.FocusPlanBuilder" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/launch_background</item>
+    </style>
 </resources>
