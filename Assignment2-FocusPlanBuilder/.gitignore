@@ -1,71 +1,38 @@
-# Built application files
-*.apk
-*.aar
-*.ap_
-*.aab
-
-# Files for the ART/Dalvik VM
-*.dex
-
-# Java class files
-*.class
-
-# Generated files
-bin/
-gen/
-out/
-release/
-
-# Gradle files
+# Gradle
 .gradle/
 build/
-app/build/
+**/build/
+.kotlin/
 
-# Local configuration file (contains SDK path, per-developer)
+# Local configuration (contains the per-developer Android SDK path)
 local.properties
 
-# Log/OS Files
-*.log
-.DS_Store
-
-# Android Studio generated files and folders
+# Android Studio / IntelliJ
+.idea/
+*.iml
 captures/
 .externalNativeBuild/
 .cxx/
+.navigation/
+
+# Built artifacts
 *.apk
-output.json
+*.aab
+*.ap_
+*.dex
+*.class
+output-metadata.json
 
-# IntelliJ / Android Studio project files (keep .idea/gradle.xml and codeStyles if you want, but ignore the rest)
-.idea/*
-!.idea/gradle.xml
-*.iml
-.idea/modules.xml
-.idea/misc.xml
-.idea/deploymentTargetDropDown.xml
-
-# Keystore files
+# Keystores
 *.jks
 *.keystore
 
-# Google Services (e.g. Firebase config), if ever added
-google-services.json
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
 
-# Freeline
-freeline.py
-freeline/
-freeline_project_description.json
-
-# fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots
-fastlane/test_output
-fastlane/readme.md
-
-# Version control
-vcs.xml
-
-# lint
+# Lint
 lint/intermediates/
 lint/generated/
 lint/outputs/
