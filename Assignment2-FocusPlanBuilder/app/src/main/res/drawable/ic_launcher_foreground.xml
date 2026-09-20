@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Launcher icon foreground: a "focus" mark made of two concentric rings and
+    an amber centre point, sized inside the 66dp adaptive-icon safe zone.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F6F4EF"
+        android:strokeWidth="5"
+        android:pathData="M54,30 a24,24 0 1,1 0,48 a24,24 0 1,1 0,-48 Z" />
+
+    <!-- Inner ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F6F4EF"
+        android:strokeWidth="4"
+        android:pathData="M54,41 a13,13 0 1,1 0,26 a13,13 0 1,1 0,-26 Z" />
+
+    <!-- Centre point -->
+    <path
+        android:fillColor="#F2A65A"
+        android:pathData="M54,49 a5,5 0 1,1 0,10 a5,5 0 1,1 0,-10 Z" />
+</vector>

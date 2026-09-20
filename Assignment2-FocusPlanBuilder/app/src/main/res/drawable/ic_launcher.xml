@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Legacy (API 24-25) launcher icon: a rounded indigo tile with the same
+    focus mark used by the adaptive icon in drawable-anydpi-v26/.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#2F4B6E"
+        android:pathData="M24,8 h60 a16,16 0 0,1 16,16 v60 a16,16 0 0,1 -16,16 h-60 a16,16 0 0,1 -16,-16 v-60 a16,16 0 0,1 16,-16 Z" />
+
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F6F4EF"
+        android:strokeWidth="5"
+        android:pathData="M54,30 a24,24 0 1,1 0,48 a24,24 0 1,1 0,-48 Z" />
+
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F6F4EF"
+        android:strokeWidth="4"
+        android:pathData="M54,41 a13,13 0 1,1 0,26 a13,13 0 1,1 0,-26 Z" />
+
+    <path
+        android:fillColor="#F2A65A"
+        android:pathData="M54,49 a5,5 0 1,1 0,10 a5,5 0 1,1 0,-10 Z" />
+</vector>

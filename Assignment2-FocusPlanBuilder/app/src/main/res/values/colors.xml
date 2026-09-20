@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Used only by the launcher icon and the pre-Compose launch window. -->
+    <color name="launch_background">#F6F4EF</color>
+    <color name="ic_launcher_background">#2F4B6E</color>
+</resources>
