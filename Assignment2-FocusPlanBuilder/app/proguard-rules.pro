@@ -1,3 +1,3 @@
 # Add project specific ProGuard rules here.
-# This file is intentionally left mostly empty; minifyEnabled is false
-# for this assignment's release build, so these rules are not active.
+# Minification is disabled for this assignment (see app/build.gradle.kts), so
+# this file only exists so the release build type has something to reference.
