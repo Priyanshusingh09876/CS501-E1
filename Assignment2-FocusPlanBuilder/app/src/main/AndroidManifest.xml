@@ -3,14 +3,21 @@
 
     <application
         android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.FocusPlanBuilder">
+
+        <!--
+            No android:configChanges="orientation" here on purpose: the Activity
+            must be destroyed and recreated on rotation so that rememberSaveable
+            is what actually preserves the two text fields (requirement 11).
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.FocusPlanBuilder">
+            android:theme="@style/Theme.FocusPlanBuilder"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
