@@ -1,5 +1,7 @@
-// Top-level build file. Individual module configuration lives in app/build.gradle.kts.
+// Top-level build file. Module-specific configuration lives in app/build.gradle.kts.
+// Plugin versions are declared once in gradle/libs.versions.toml (Gradle version catalog).
 plugins {
-    id("com.android.application") version "8.5.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
 }
