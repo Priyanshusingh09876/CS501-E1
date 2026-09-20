@@ -89,8 +89,6 @@ There are no XML layouts, Fragments, or legacy Views: the entire UI is Compose.
 |---|---|
 | ![Plan created](docs/screenshots/plan_light.png) | ![Validation](docs/screenshots/validation_error.png) |
 
-<<< If you add your own emulator/phone screenshot, drop it in `docs/screenshots/`
-and add a column here, e.g. `![On device](docs/screenshots/device.png)`. >>>
 
 ---
 
