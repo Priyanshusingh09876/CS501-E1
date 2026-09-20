@@ -5,16 +5,20 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import com.priyanshusingh.focusplanbuilder.ui.FocusPlanRoute
 import com.priyanshusingh.focusplanbuilder.ui.theme.FocusPlanBuilderTheme
 
 /**
- * The single Activity that hosts this single-screen application. All UI is
- * built with Jetpack Compose; there is no XML layout, no legacy View, and
- * no Fragment involved anywhere in this app.
+ * The only Activity in the app. Everything on screen is Jetpack Compose: no
+ * XML layouts, no legacy Views, no Fragments.
+ *
+ * `enableEdgeToEdge()` lets the parchment background run under the system
+ * bars; `Scaffold` then hands back the safe insets as padding so nothing is
+ * drawn under the status bar or navigation bar.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,11 +26,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FocusPlanBuilderTheme {
-                Surface(
+                Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    FocusPlanRoute()
+                    containerColor = MaterialTheme.colorScheme.background
+                ) { innerPadding ->
+                    FocusPlanRoute(
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }

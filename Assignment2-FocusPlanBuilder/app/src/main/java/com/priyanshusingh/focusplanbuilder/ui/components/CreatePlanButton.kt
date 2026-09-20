@@ -8,20 +8,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.priyanshusingh.focusplanbuilder.ui.theme.FocusFieldShape
+import com.priyanshusingh.focusplanbuilder.model.MinutesValidation
+import com.priyanshusingh.focusplanbuilder.model.isSubjectValid
+import com.priyanshusingh.focusplanbuilder.ui.FocusPlanTestTags
+import com.priyanshusingh.focusplanbuilder.ui.theme.FieldShape
 
 /**
- * The "Create plan" button -- the single place in this screen where the
- * warm amber accent color appears, deliberately, so it reads as *the*
- * action rather than one of several competing bright elements.
+ * The single primary action on the screen.
  *
- * [enabled] is passed in from the caller rather than computed here -- this
- * composable has no idea what makes a plan valid, and it should not. The
- * enabled/disabled decision (subject not blank AND minutes parses to a
- * value in 10..180) lives in FocusPlanRoute, computed fresh on every
- * recomposition from the current input, with no separate mutable Boolean
- * to fall out of sync.
+ * [enabled] is handed in, never computed here. This component has no idea what
+ * makes a plan valid, and it should not: the rule lives in FocusPlanRoute as
+ * `subject.isNotBlank() && minutes != null && minutes in 10..180`, evaluated
+ * fresh on every recomposition, with no separate Boolean state to drift.
  */
 @Composable
 fun CreatePlanButton(
@@ -32,18 +33,56 @@ fun CreatePlanButton(
     Button(
         onClick = onClick,
         enabled = enabled,
-        shape = FocusFieldShape,
+        shape = FieldShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
         modifier = modifier
             .fillMaxWidth()
-            .height(52.dp)
+            .height(56.dp)
+            .testTag(FocusPlanTestTags.CREATE_BUTTON)
     ) {
         Text(
             text = "Create plan",
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.labelLarge
         )
     }
+}
+
+/**
+ * One quiet line under the button that says exactly what is still missing, so
+ * a disabled button is never a mystery. Derived entirely from the inputs.
+ */
+@Composable
+fun PlanReadinessHint(
+    subject: String,
+    minutesValidation: MinutesValidation,
+    canCreatePlan: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val message = when {
+        canCreatePlan -> "Ready. Tap Create plan to build your session."
+        !isSubjectValid(subject) && minutesValidation is MinutesValidation.Valid ->
+            "Add a subject to enable the button."
+        !isSubjectValid(subject) -> "Add a subject and a duration to get started."
+        minutesValidation is MinutesValidation.Empty -> "Now enter how many minutes you have."
+        else -> "Fix the minutes field to enable the button."
+    }
+
+    Text(
+        text = message,
+        style = MaterialTheme.typography.bodyMedium,
+        color = if (canCreatePlan) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        textAlign = TextAlign.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag(FocusPlanTestTags.READINESS_HINT)
+    )
 }

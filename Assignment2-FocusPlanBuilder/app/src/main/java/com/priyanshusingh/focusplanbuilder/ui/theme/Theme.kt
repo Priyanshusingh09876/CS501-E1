@@ -1,75 +1,100 @@
 package com.priyanshusingh.focusplanbuilder.ui.theme
 
-import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 
 private val LightColors = lightColorScheme(
-    primary = FocusIndigo,
+    primary = Indigo40,
     onPrimary = Color.White,
-    secondary = FocusAmber,
-    onSecondary = FocusInk,
-    tertiary = CategoryExtendedSession,
-    background = FocusParchment,
-    onBackground = FocusInk,
-    surface = FocusParchment,
-    onSurface = FocusInk,
-    surfaceVariant = FocusSurfaceLight,
-    onSurfaceVariant = FocusInk
+    primaryContainer = Indigo90,
+    onPrimaryContainer = Indigo20,
+    secondary = Indigo60,
+    onSecondary = Color.White,
+    secondaryContainer = Indigo95,
+    onSecondaryContainer = Indigo20,
+    tertiary = Amber40,
+    onTertiary = Color.White,
+    tertiaryContainer = Amber90,
+    onTertiaryContainer = Amber20,
+    error = Error40,
+    onError = Color.White,
+    errorContainer = Error90,
+    onErrorContainer = Error20,
+    background = Parchment,
+    onBackground = Ink,
+    surface = ParchmentSurface,
+    onSurface = Ink,
+    surfaceVariant = Sand20,
+    onSurfaceVariant = InkMuted,
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Sand10,
+    surfaceContainer = Sand20,
+    surfaceContainerHigh = Sand30,
+    surfaceContainerHighest = Sand40,
+    outline = InkFaint,
+    outlineVariant = Sand40,
+    inverseSurface = Indigo20,
+    inverseOnSurface = Cloud,
+    inversePrimary = Indigo80
 )
 
 private val DarkColors = darkColorScheme(
-    primary = FocusAmber,
-    onPrimary = FocusInk,
-    secondary = FocusIndigo,
-    onSecondary = Color.White,
-    tertiary = CategoryQuickReview,
-    background = FocusIndigoDark,
-    onBackground = FocusParchment,
-    surface = FocusIndigoDark,
-    onSurface = FocusParchment,
-    surfaceVariant = FocusSurfaceDark,
-    onSurfaceVariant = FocusParchment
+    primary = Indigo80,
+    onPrimary = Indigo20,
+    primaryContainer = Indigo30,
+    onPrimaryContainer = Indigo90,
+    secondary = Indigo60,
+    onSecondary = Indigo10,
+    secondaryContainer = Night40,
+    onSecondaryContainer = Indigo90,
+    tertiary = Amber70,
+    onTertiary = Amber20,
+    tertiaryContainer = Amber30,
+    onTertiaryContainer = Amber90,
+    error = Error80,
+    onError = Error20,
+    errorContainer = Error20,
+    onErrorContainer = Error90,
+    background = Night,
+    onBackground = Cloud,
+    surface = Night,
+    onSurface = Cloud,
+    surfaceVariant = Night30,
+    onSurfaceVariant = CloudMuted,
+    surfaceContainerLowest = Indigo10,
+    surfaceContainerLow = Night10,
+    surfaceContainer = Night20,
+    surfaceContainerHigh = Night30,
+    surfaceContainerHighest = Night40,
+    outline = Night80,
+    outlineVariant = Night60,
+    inverseSurface = Cloud,
+    inverseOnSurface = Night,
+    inversePrimary = Indigo40
 )
 
 /**
- * This app's Material 3 theme.
+ * The app's Material 3 theme.
  *
- * Unlike a freshly generated Compose template, this does NOT default to
- * Android 12+ dynamic color: dynamic color would replace the deliberately
- * chosen indigo/amber/parchment palette above with whatever tint happens
- * to come from the user's wallpaper, which defeats the point of choosing a
- * specific identity for this app. The custom [LightColors]/[DarkColors]
- * schemes are used unconditionally; only light/dark mode still follows the
- * system setting.
+ * Dynamic (wallpaper-based) color is intentionally not used: it would replace
+ * the deliberately chosen indigo/amber/parchment palette with whatever tint the
+ * device wallpaper happens to have. Light and dark mode still follow the system
+ * setting. Status/navigation bar colors are handled by `enableEdgeToEdge()` in
+ * MainActivity, which is the modern, non-deprecated approach.
  */
 @Composable
 fun FocusPlanBuilderTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColors else LightColors
-
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
-        }
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
+        colorScheme = if (darkTheme) DarkColors else LightColors,
+        typography = FocusTypography,
+        shapes = FocusShapes,
         content = content
     )
 }

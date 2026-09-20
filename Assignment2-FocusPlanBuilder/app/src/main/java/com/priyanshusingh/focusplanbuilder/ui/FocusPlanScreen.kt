@@ -1,56 +1,57 @@
 package com.priyanshusingh.focusplanbuilder.ui
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.priyanshusingh.focusplanbuilder.model.FocusPlan
+import com.priyanshusingh.focusplanbuilder.model.MinutesValidation
+import com.priyanshusingh.focusplanbuilder.model.subjectErrorMessage
+import com.priyanshusingh.focusplanbuilder.model.validateMinutes
 import com.priyanshusingh.focusplanbuilder.ui.components.CreatePlanButton
-import com.priyanshusingh.focusplanbuilder.ui.components.FocusPlanInstructions
+import com.priyanshusingh.focusplanbuilder.ui.components.FocusPlanHeader
 import com.priyanshusingh.focusplanbuilder.ui.components.FocusPlanResultCard
-import com.priyanshusingh.focusplanbuilder.ui.components.FocusPlanTitle
-import com.priyanshusingh.focusplanbuilder.ui.components.MinutesInputField
-import com.priyanshusingh.focusplanbuilder.ui.components.SubjectInputField
+import com.priyanshusingh.focusplanbuilder.ui.components.PlanInputPanel
+import com.priyanshusingh.focusplanbuilder.ui.components.PlanReadinessHint
+import com.priyanshusingh.focusplanbuilder.ui.components.ResultPlaceholder
+import com.priyanshusingh.focusplanbuilder.ui.theme.FocusPlanBuilderTheme
 
 /**
- * FocusPlanScreen is intentionally "dumb": it never owns [subject] or
- * [minutesText] itself, never decides validity, and never constructs a
- * FocusPlan. It only:
- *   - lays out whatever values it is given, by delegating to small
- *     single-purpose composables in ui/components/, and
- *   - reports user actions upward through callbacks.
+ * The stateless half of the screen.
  *
- * This separation (state hoisting) is what lets FocusPlanRoute be tested,
- * reused, or swapped independently of the visual layer, and is required by
- * the assignment. Each visual piece (title, instructions, the two input
- * fields, the button, the result card) lives in its own file under
- * ui/components/ so this file stays a short, readable "table of contents"
- * for the screen rather than one long block of layout code.
+ * FocusPlanScreen never owns [subject], [minutesText] or [plan]; it receives
+ * them as plain parameters, lays them out, and reports every user action back
+ * up through the callbacks. That separation (state hoisting) is what makes this
+ * composable trivially previewable and testable: hand it values, look at pixels.
  *
- * Content is centered and capped at 480dp wide so the layout stays
- * comfortable to read on a tablet or a rotated phone rather than
- * stretching input fields edge to edge.
+ * Each visual section lives in its own file under `ui/components/` so this
+ * function reads as a table of contents for the screen.
+ *
+ * @param minutesValidation Detailed validation state for the minutes field,
+ *   used only for the helper/error text. Defaults to recomputing it, so callers
+ *   that do not care (like previews) can omit it.
+ * @param subjectError Error text for the subject field, or null.
+ * @param onStartOver Clears both inputs and the plan.
  */
 @Composable
 fun FocusPlanScreen(
@@ -61,52 +62,40 @@ fun FocusPlanScreen(
     onMinutesChange: (String) -> Unit,
     canCreatePlan: Boolean,
     onCreatePlan: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onStartOver: () -> Unit = {},
+    minutesValidation: MinutesValidation = validateMinutes(minutesText),
+    subjectError: String? = subjectErrorMessage(subject)
 ) {
-    // The result card animates in when a plan is created, and out when it
-    // is cleared -- the one deliberate motion moment on this screen,
-    // triggered directly by the user's own action (pressing the button, or
-    // editing a field afterward). AnimatedVisibility needs *something* to
-    // keep rendering while it fades/shrinks out, but `plan` itself has
-    // already gone back to null by that point (see FocusPlanRoute's reset
-    // behavior) -- so the last real plan is cached here, purely for the
-    // exit animation to have content to show. This is local display state
-    // only; it never feeds back into canCreatePlan or any other logic.
-    var lastPlan by remember { mutableStateOf<FocusPlan?>(null) }
-    LaunchedEffect(plan) {
-        if (plan != null) lastPlan = plan
-    }
-
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .imePadding()
+            .padding(horizontal = 20.dp, vertical = 24.dp)
+            .testTag(FocusPlanTestTags.SCREEN),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Capping the content width keeps the fields comfortable on tablets and
+        // on a phone in landscape instead of stretching them edge to edge.
         Column(
-            modifier = Modifier.widthIn(max = 480.dp),
-            verticalArrangement = Arrangement.Top
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 560.dp)
         ) {
-            FocusPlanTitle()
+            FocusPlanHeader()
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            FocusPlanInstructions()
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            SubjectInputField(
-                value = subject,
-                onValueChange = onSubjectChange
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            MinutesInputField(
-                value = minutesText,
-                onValueChange = onMinutesChange
+            PlanInputPanel(
+                subject = subject,
+                minutesText = minutesText,
+                subjectError = subjectError,
+                minutesValidation = minutesValidation,
+                canCreatePlan = canCreatePlan,
+                onSubjectChange = onSubjectChange,
+                onMinutesChange = onMinutesChange,
+                onCreatePlan = onCreatePlan
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -116,20 +105,142 @@ fun FocusPlanScreen(
                 onClick = onCreatePlan
             )
 
+            Spacer(modifier = Modifier.height(10.dp))
+
+            PlanReadinessHint(
+                subject = subject,
+                minutesValidation = minutesValidation,
+                canCreatePlan = canCreatePlan
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
 
-            // The result card is only actually present in the plan-holding
-            // state when plan is non-null -- per requirement 9, it must not
-            // be visible before the first plan is created, and per
-            // requirement 12, it must go away as soon as either input
-            // changes (FocusPlanRoute sets plan back to null then).
-            AnimatedVisibility(
-                visible = plan != null,
-                enter = fadeIn(tween(220)) + expandVertically(tween(220)),
-                exit = fadeOut(tween(140)) + shrinkVertically(tween(140))
-            ) {
-                lastPlan?.let { FocusPlanResultCard(plan = it) }
+            // AnimatedContent keeps the outgoing card on screen just long
+            // enough to fade it out, then shows the placeholder. When `plan`
+            // is null (before the first plan, or after an edit) the card is
+            // simply not part of the composition at all.
+            AnimatedContent(
+                targetState = plan,
+                transitionSpec = {
+                    (fadeIn(tween(260)) + slideInVertically(tween(260)) { it / 6 })
+                        .togetherWith(fadeOut(tween(140)))
+                },
+                label = "result_card"
+            ) { targetPlan ->
+                if (targetPlan != null) {
+                    FocusPlanResultCard(
+                        plan = targetPlan,
+                        onStartOver = onStartOver
+                    )
+                } else {
+                    ResultPlaceholder()
+                }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+/** Paints the theme background behind a preview so dark previews look right. */
+@Composable
+private fun PreviewSurface(content: @Composable () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        content = content
+    )
+}
+
+// ---------------------------------------------------------------------------
+// Previews (Android Studio "Split"/"Design" view). These are the payoff of
+// state hoisting: the screen can be rendered in any state without a device.
+// ---------------------------------------------------------------------------
+
+@Preview(name = "Empty", showBackground = true, widthDp = 411, heightDp = 891)
+@Composable
+private fun FocusPlanScreenEmptyPreview() {
+    FocusPlanBuilderTheme {
+        PreviewSurface {
+            FocusPlanScreen(
+                subject = "",
+                minutesText = "",
+                plan = null,
+                onSubjectChange = {},
+                onMinutesChange = {},
+                canCreatePlan = false,
+                onCreatePlan = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "Invalid minutes", showBackground = true, widthDp = 411, heightDp = 891)
+@Composable
+private fun FocusPlanScreenInvalidPreview() {
+    FocusPlanBuilderTheme {
+        PreviewSurface {
+            FocusPlanScreen(
+                subject = "Kotlin",
+                minutesText = "181",
+                plan = null,
+                onSubjectChange = {},
+                onMinutesChange = {},
+                canCreatePlan = false,
+                onCreatePlan = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "With plan", showBackground = true, widthDp = 411, heightDp = 1000)
+@Composable
+private fun FocusPlanScreenWithPlanPreview() {
+    FocusPlanBuilderTheme {
+        PreviewSurface {
+            FocusPlanScreen(
+                subject = "Compose State",
+                minutesText = "45",
+                plan = FocusPlan(
+                    subject = "Compose State",
+                    minutes = 45,
+                    category = "Focused session",
+                    breakMinutes = 10
+                ),
+                onSubjectChange = {},
+                onMinutesChange = {},
+                canCreatePlan = true,
+                onCreatePlan = {}
+            )
+        }
+    }
+}
+
+@Preview(
+    name = "Dark, with plan",
+    showBackground = true,
+    widthDp = 411,
+    heightDp = 1000,
+    uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun FocusPlanScreenDarkPreview() {
+    FocusPlanBuilderTheme(darkTheme = true) {
+        PreviewSurface {
+            FocusPlanScreen(
+                subject = "Databases",
+                minutesText = "90",
+                plan = FocusPlan(
+                    subject = "Databases",
+                    minutes = 90,
+                    category = "Extended session",
+                    breakMinutes = 15
+                ),
+                onSubjectChange = {},
+                onMinutesChange = {},
+                canCreatePlan = true,
+                onCreatePlan = {}
+            )
         }
     }
 }
