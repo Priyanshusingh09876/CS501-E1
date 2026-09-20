@@ -384,9 +384,5 @@ fixes and documentation. Each commit builds and its tests pass.
 
 ---
 
-## AI use
-
-
-  explain why the inputs are stored as `String`; explain the difference between
-  `remember` and `rememberSaveable`; and walk through `durationCategory()` and
-  `recommendedBreak()` for each boundary value (10, 29, 30, 60, 61, 180).
+## AI Usage
+AI (Claude) was used for a little ideation and brainstorming, for UI improvements, and for drafting this README. All app logic, code, and final design decisions were done by me.
