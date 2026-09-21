@@ -85,10 +85,13 @@ There are no XML layouts, Fragments, or legacy Views: the entire UI is Compose.
 
 ## Screenshots
 
-| Plan created (Compose State, 45 min) | Validation error | After rotation |
-|---|---|---|
-| ![Plan created](docs/screenshots/plan_light.png) | ![Validation](docs/screenshots/validation_error.png) | ![Rotated](docs/screenshots/plan_landscape.png) |
+| Plan created (Compose State, 45 min) | Validation error |
+|---|---|
+| ![Plan created](docs/screenshots/plan_light.png) | ![Validation](docs/screenshots/validation_error.png) |
 
+**After rotation** (subject, minutes, and card restored by `rememberSaveable`):
+
+![Rotated](docs/screenshots/plan_landscape.png)
 ---
 
 ## Running the app
