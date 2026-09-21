@@ -247,38 +247,36 @@ other for every value from 10 to 180.
 
 ## State and recomposition explanation
 
-`FocusPlanRoute` owns all of the screen's state. `subject`, `minutesText`, and
-the generated `plan` are declared there with `mutableStateOf` inside
-`rememberSaveable`. `FocusPlanScreen` is stateless: it receives those values as
-ordinary parameters and reports user actions back through callbacks
-(`onSubjectChange`, `onMinutesChange`, `onCreatePlan`, `onStartOver`). This is
-state hoisting; the screen and every component under it can be previewed and
-tested just by passing values in.
+**Which composable owns the application state?**
+`FocusPlanRoute`. It declares `subject`, `minutesText`, and `plan` with
+`mutableStateOf` inside `rememberSaveable`, validates the input, and builds the
+`FocusPlan`. `FocusPlanScreen` is stateless: it receives those values as
+parameters and reports user actions through `onSubjectChange`,
+`onMinutesChange`, and `onCreatePlan`. This is state hoisting.
 
-The inputs are stored as `String`, not `Int`, because a `TextField` must be able
-to hold whatever the user has typed so far: an empty field, a partial number, or
-"abc". None of those fit in an `Int`. Storing an `Int` would either crash or
-silently drop keystrokes.
+**Why are the text-field values stored as `String` rather than `Int`?**
+A `TextField` must hold whatever the user has typed so far, including an empty
+field, a partial number, or `"abc"`. None of those can be represented as an
+`Int`, so the raw text is stored and parsed only when needed.
 
-`toIntOrNull()` is used instead of `toInt()` because `toInt()` throws
-`NumberFormatException` for blank, non-numeric, decimal, or oversized text.
-`toIntOrNull()` returns `null`, which the app treats as "not valid yet".
+**Why is `toIntOrNull()` safer than `toInt()`?**
+`toInt()` throws `NumberFormatException` on blank, non-numeric, decimal, or
+oversized text, which would crash the app mid-keystroke. `toIntOrNull()`
+returns `null`, which the app treats as "not valid yet".
 
-The button's `enabled` flag is not stored anywhere. It is computed on every
-recomposition as
+**What state change causes the button to be recomposed?**
+Any write to `subject` or `minutesText`. `canCreatePlan` is not stored; it is
+computed on each recomposition as
 `subject.isNotBlank() && minutes != null && minutes in 10..180`. Because that
-expression reads the two state values, any change to either one recomposes
-`FocusPlanRoute`, re-evaluates the expression, and the button updates by
-itself. There is no separate boolean to keep in sync.
+expression reads both state values, a keystroke in either field recomposes
+`FocusPlanRoute` and the button's `enabled` flag updates automatically.
 
-`rememberSaveable` differs from `remember` in where the value lives. `remember`
-keeps it in the in-memory composition, which is discarded when the Activity is
-recreated on rotation. `rememberSaveable` also writes it into the Activity's
-saved-instance-state `Bundle`, so after rotation the subject, minutes, and plan
-are restored. The plan is a data class rather than a primitive, so a small
-`Saver` (`FocusPlanSaver.kt`) flattens it into a list of Bundle-friendly values.
-
----
+**What does `rememberSaveable` preserve that a local variable would not?**
+A local variable is reset on every recomposition. `remember` survives
+recomposition but is lost when the Activity is recreated on rotation.
+`rememberSaveable` also writes the value into the saved-instance-state
+`Bundle`, so the subject and minutes come back after rotation. The plan is a
+data class, so `FocusPlanSaver` flattens it into Bundle-friendly values.
 
 ## Validation rules and edge cases
 
