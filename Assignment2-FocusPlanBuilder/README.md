@@ -385,4 +385,4 @@ fixes and documentation. Each commit builds and its tests pass.
 ---
 
 ## AI Usage
-AI (Claude) was used for a little ideation and brainstorming, for UI improvements, and for drafting this README. All app logic, code, and final design decisions were done by me.
+Generative AI was used for guidance with Compose code organization, UI refinement, debugging, test-case review, and README wording. I reviewed, understood, tested, and adjusted the final code used in this application.
