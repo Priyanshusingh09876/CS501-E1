@@ -85,10 +85,9 @@ There are no XML layouts, Fragments, or legacy Views: the entire UI is Compose.
 
 ## Screenshots
 
-| Plan created (Compose State, 45 min) | Validation error |
-|---|---|
-| ![Plan created](docs/screenshots/plan_light.png) | ![Validation](docs/screenshots/validation_error.png) |
-
+| Plan created (Compose State, 45 min) | Validation error | After rotation |
+|---|---|---|
+| ![Plan created](docs/screenshots/plan_light.png) | ![Validation](docs/screenshots/validation_error.png) | ![Rotated](docs/screenshots/plan_landscape.png) |
 
 ---
 
