@@ -89,9 +89,11 @@ There are no XML layouts, Fragments, or legacy Views: the entire UI is Compose.
 |---|---|
 | ![Plan created](docs/screenshots/plan_light.png) | ![Validation](docs/screenshots/validation_error.png) |
 
-**After rotation** (subject, minutes, and card restored by `rememberSaveable`):
+**After rotation** (subject, minutes, and result card restored by `rememberSaveable`):
 
-![Rotated](docs/screenshots/plan_landscape.png)
+| Inputs in landscape | Result card in landscape |
+|---|---|
+| ![Landscape inputs](docs/screenshots/landscape_focus.png) | ![Landscape result](docs/screenshots/landscape_result.png) |
 ---
 
 ## Running the app
