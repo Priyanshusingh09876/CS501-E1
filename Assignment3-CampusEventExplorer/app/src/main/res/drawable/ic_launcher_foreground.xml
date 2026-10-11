@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Calendar page with a location pin: "campus events, somewhere on campus". -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Calendar body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M31,34 H77 A4,4 0 0 1 81,38 V76 A4,4 0 0 1 77,80 H31 A4,4 0 0 1 27,76 V38 A4,4 0 0 1 31,34 Z" />
+
+    <!-- Calendar header band -->
+    <path
+        android:fillColor="#8E0000"
+        android:pathData="M31,34 H77 A4,4 0 0 1 81,38 V46 H27 V38 A4,4 0 0 1 31,34 Z" />
+
+    <!-- Binder rings -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,28 h5 v12 h-5 z M65,28 h5 v12 h-5 z" />
+
+    <!-- Location pin -->
+    <path
+        android:fillColor="#CC0000"
+        android:pathData="M54,50 C47.4,50 42,55.3 42,61.8 C42,70.6 54,78 54,78 C54,78 66,70.6 66,61.8 C66,55.3 60.6,50 54,50 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,57.5 A4.5,4.5 0 1 0 54,66.5 A4.5,4.5 0 1 0 54,57.5 Z" />
+</vector>

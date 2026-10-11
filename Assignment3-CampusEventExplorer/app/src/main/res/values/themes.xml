@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The real theming lives in Compose (ui/theme/Theme.kt); this only styles the window
+         before the first frame is drawn. -->
+    <style name="Theme.CampusEventExplorer" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
