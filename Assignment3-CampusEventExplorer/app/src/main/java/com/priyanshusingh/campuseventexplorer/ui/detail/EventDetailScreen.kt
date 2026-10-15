@@ -133,11 +133,7 @@ private fun EventDetailContent(
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(
-            text = event.title,
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        DetailHeader(title = event.title, category = event.category)
 
         Card(
             modifier = Modifier.fillMaxWidth(),

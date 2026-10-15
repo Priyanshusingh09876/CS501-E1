@@ -1,13 +1,17 @@
 package com.priyanshusingh.campuseventexplorer.ui.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Place
@@ -36,9 +40,13 @@ import com.priyanshusingh.campuseventexplorer.ui.TestTags
 import com.priyanshusingh.campuseventexplorer.ui.components.CategoryBadge
 import com.priyanshusingh.campuseventexplorer.ui.components.EventMetaRow
 import com.priyanshusingh.campuseventexplorer.ui.theme.CampusEventExplorerTheme
+import com.priyanshusingh.campuseventexplorer.ui.theme.categoryAccent
 
 /**
  * One row of the event list: title, category, location and time.
+ *
+ * A thin stripe on the leading edge carries the category's accent colour, so a user can scan
+ * the list by colour before reading a single word.
  *
  * The whole card is a single accessibility node (`mergeDescendants`) with a descriptive label,
  * so TalkBack reads "Mobile Development Meetup. Tech at CAS 214, Tuesday 6:30 PM. Opens event
@@ -57,6 +65,7 @@ fun EventListItem(
         event.location,
         event.time,
     )
+    val accent = categoryAccent(event.category)
 
     Card(
         onClick = onClick,
@@ -74,11 +83,20 @@ fun EventListItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Row(
-            modifier = Modifier.padding(start = 16.dp, top = 14.dp, end = 8.dp, bottom = 14.dp),
+            modifier = Modifier.height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Category accent stripe along the leading edge.
+            Box(
+                modifier = Modifier
+                    .width(6.dp)
+                    .fillMaxHeight()
+                    .background(accent.onContainer.copy(alpha = 0.55f)),
+            )
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 14.dp, top = 14.dp, end = 4.dp, bottom = 14.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
@@ -93,11 +111,11 @@ fun EventListItem(
                 EventMetaRow(icon = Icons.Default.Place, text = event.location)
                 EventMetaRow(icon = Icons.Default.Schedule, text = event.time)
             }
-            Spacer(Modifier.width(4.dp))
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 8.dp),
             )
         }
     }
