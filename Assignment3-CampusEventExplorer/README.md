@@ -19,7 +19,9 @@ Screenshots were taken on a Pixel 6 emulator (API 35, Material You dynamic colou
 ## Features
 
 - **Event list** (start destination): `LazyColumn` keyed by the event's stable `id`, each card
-  showing title, category, location and time.
+  showing title, category, location and time. Every category gets its own accent colour (badge,
+  filter chip and a stripe on the card edge) derived from the Material 3 colour scheme, so it
+  adapts to dark mode and Material You.
 - **Search events**: filters by title *or* category as you type (case-insensitive, whitespace
   tolerant). The filtered list is *derived* from the search text; there is no second mutable
   list. The text lives in `rememberSaveable`, so it survives rotation and the trip to the
@@ -58,10 +60,18 @@ app/src/main/java/com/priyanshusingh/campuseventexplorer/
 │   └── NavControllerExt.kt         double-tap-safe navigate helper
 ├── share/EventSharer.kt            builds + launches the implicit ACTION_SEND intent
 └── ui/
-    ├── list/                       EventListScreen, EventListItem
-    ├── detail/                     EventDetailScreen, EventUnavailableContent
+    ├── list/
+    │   ├── EventListScreen.kt      stateless list screen (search field + LazyColumn)
+    │   ├── EventListItem.kt        one card, with a category accent stripe
+    │   ├── CategoryFilterRow.kt    quick-filter chips
+    │   └── ResultSummary.kt        "2 of 12 events match" caption
+    ├── detail/
+    │   ├── EventDetailScreen.kt    stateless detail screen (app bar, Up, Share)
+    │   ├── DetailHeader.kt         gradient hero banner with the title
+    │   ├── DetailRow.kt            icon + label + value row
+    │   └── EventUnavailableContent.kt  "Event unavailable" + "Return to events"
     ├── components/                 SearchField, CategoryBadge, EventMetaRow, EmptySearchState
-    └── theme/                      Material 3 theme (dynamic colour + dark mode)
+    └── theme/                      Material 3 theme, dark mode, CategoryAccent colours
 ```
 
 ## Running the app
@@ -102,43 +112,41 @@ system Back – you are on the filtered list again. `RotationStateTest` and
 ## Questions
 
 **1. Why does the route contain an event ID instead of the complete event object?**
-The back stack is saved into a `Bundle` (for rotation and process death), so route arguments
-should be small primitives. A `Long` is trivially serialisable and stable; a whole
-`CampusEvent` would be a redundant copy that could drift out of sync with the repository, would
-require `Parcelable`/size-limited serialisation, and would couple the navigation layer to the
-shape of the model. Passing identity and looking the event up again (`events.firstOrNull { it.id
-== route.eventId }`) keeps one source of truth and lets the detail screen handle a missing event
-gracefully.
+Route arguments are saved into a `Bundle` for rotation and process death, so they should be
+small, stable primitives. A `Long` is exactly that. Passing a whole `CampusEvent` would create a
+second copy that could drift from the repository, would need `Parcelable`/`@Serializable`, and
+would tie the navigation graph to the model's shape. Passing identity and re-looking the event up
+(`events.firstOrNull { it.id == route.eventId }`) keeps one source of truth and lets the detail
+screen handle a missing event gracefully.
 
 **2. Which composable owns the search state?**
-`EventListRoute` (in `navigation/EventListRoute.kt`), the state holder that `NavHost` composes for
-the `EventList` destination. It declares `var query by rememberSaveable { mutableStateOf("") }`,
-derives `filteredEvents` from it, and passes `query` + `onQueryChange` down. `EventListScreen`
-itself is stateless.
+`EventListRoute` (`navigation/EventListRoute.kt`), the state holder composed for the `EventList`
+destination. It declares `var query by rememberSaveable { mutableStateOf("") }`, derives the
+filtered list from it, and passes `query` + `onQueryChange` down. `EventListScreen` is stateless.
 
 **3. Why does the search value use `rememberSaveable`?**
-A plain `remember` lives only as long as the composition; a rotation recreates the Activity,
-so the text would reset to empty. `rememberSaveable` stores the `String` in the saved-instance
-state (scoped to the `EventList` back-stack entry), so it is restored after rotation, after
-coming back from the detail screen, and even after process death.
+`remember` only lives as long as the composition; rotation recreates the Activity and would wipe
+the text. `rememberSaveable` writes the `String` into saved-instance state scoped to the
+`EventList` back-stack entry, so it is restored after rotation, after returning from the detail
+screen, and after process death.
 
 **4. What happens to the back stack when an event is selected?**
-`navController.navigate(EventDetail(eventId))` pushes a new `EventDetail` entry on top of
-`EventList`: the stack becomes `[EventList, EventDetail(id)]`. The list entry is kept (with its
-saved state), so system Back or Up pops the detail entry and the list reappears exactly as it
-was. `launchSingleTop` plus a lifecycle check prevent a double tap from pushing two details.
+`navController.navigate(EventDetail(eventId))` pushes a new entry on top of the list:
+`[EventList, EventDetail(id)]`. The list entry stays underneath with its saved state, so system
+Back or Up pops the detail entry and the list reappears exactly as it was. `launchSingleTop` plus a
+`RESUMED` lifecycle check stop a double tap from pushing two detail entries.
 
 **5. How does the UI request navigation without directly accessing the `NavController`?**
-Screens expose plain callbacks – `onEventSelected: (Long) -> Unit`, `onBack: () -> Unit`,
-`onShare: () -> Unit`. `CampusEventNavHost` is the only code that holds the controller; inside
-each `composable<...>` block it supplies lambdas that call `navigate(...)` / `navigateUp()`. The
-screens just invoke the lambda they were given (events up, state down).
+Screens expose plain callbacks (`onEventSelected: (Long) -> Unit`, `onBack`, `onShare`).
+`CampusEventNavHost` is the only class that holds the controller; inside each `composable<...>`
+block it supplies lambdas that call `navigate(...)` / `navigateUp()`. The screens just invoke the
+lambda they were given - state flows down, events flow up.
 
 **6. What makes the Share action an implicit intent?**
-The intent names *what* to do, not *who* should do it: `Intent(Intent.ACTION_SEND)` with
+The intent describes *what* to do, not *who* should do it: `Intent(Intent.ACTION_SEND)` with
 `type = "text/plain"` and `EXTRA_TEXT`, and no component or package set. Android resolves every
-activity whose intent filter matches, and `Intent.createChooser()` presents them in the system
-share sheet rather than targeting one specific app.
+activity whose filter matches, and `Intent.createChooser()` shows them in the system share sheet
+instead of targeting one app.
 
 ## AI / collaboration disclosure
 
