@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,10 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.priyanshusingh.campuseventexplorer.R
@@ -163,59 +158,6 @@ fun EventListScreen(
             }
         }
     }
-}
-
-@Composable
-private fun CategoryFilterRow(
-    categories: List<String>,
-    selectedCategory: String?,
-    onCategoryClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val rowDescription = stringResource(R.string.category_filters)
-    LazyRow(
-        modifier = modifier
-            .fillMaxWidth()
-            .semantics { contentDescription = rowDescription }
-            .testTag(TestTags.CATEGORY_CHIP_ROW),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        items(items = categories, key = { it }) { category ->
-            FilterChip(
-                selected = category == selectedCategory,
-                onClick = { onCategoryClick(category) },
-                label = { Text(category) },
-                modifier = Modifier.testTag(TestTags.categoryChip(category)),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ResultSummary(
-    shownCount: Int,
-    totalCount: Int,
-    query: String,
-    modifier: Modifier = Modifier,
-) {
-    val text = when {
-        query.isEmpty() -> pluralStringResource(R.plurals.results_all, totalCount, totalCount)
-        shownCount == 0 -> stringResource(R.string.results_none, query)
-        else -> pluralStringResource(
-            R.plurals.results_filtered,
-            shownCount,
-            shownCount,
-            totalCount,
-            query,
-        )
-    }
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = modifier.testTag(TestTags.RESULT_SUMMARY),
-    )
 }
 
 @Preview(showBackground = true, showSystemUi = true)

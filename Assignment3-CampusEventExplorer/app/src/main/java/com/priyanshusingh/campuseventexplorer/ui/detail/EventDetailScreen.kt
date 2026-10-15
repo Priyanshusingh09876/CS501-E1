@@ -2,7 +2,6 @@ package com.priyanshusingh.campuseventexplorer.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,9 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -203,34 +200,6 @@ private fun EventDetailContent(
             )
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
             Text(stringResource(R.string.share_event))
-        }
-    }
-}
-
-/** Label-over-value row with a leading icon, used for the three key facts on the detail card. */
-@Composable
-private fun DetailRow(
-    icon: ImageVector,
-    label: String,
-    value: @Composable () -> Unit,
-) {
-    Row(verticalAlignment = Alignment.Top) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier
-                .padding(top = 2.dp)
-                .size(22.dp),
-            tint = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.size(12.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            value()
         }
     }
 }
