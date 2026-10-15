@@ -150,9 +150,4 @@ instead of targeting one app.
 
 ## AI / collaboration disclosure
 
-This project was developed by Priyanshu Singh with the assistance of an AI coding agent
-(Cursor, Claude). The AI was used to scaffold the project, draft the Compose screens, the
-navigation wiring and the test suite, and to review edge cases; I directed the requirements,
-reviewed every file, ran the build and tests, and am responsible for the final submission. No
-other students collaborated on this assignment. Android documentation for Navigation Compose
-(type-safe routes), `rememberSaveable` and `Intent.createChooser()` was consulted.
+Generative AI was used for guidance with Compose code organization, UI refinement, debugging, test-case review, and README wording. I reviewed, understood, tested, and adjusted the final code used in this application.
