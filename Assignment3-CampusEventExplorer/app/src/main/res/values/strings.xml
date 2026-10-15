@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">Campus Event Explorer</string>
+
+    <!-- Event list -->
+    <string name="list_title">Campus Event Explorer</string>
+    <string name="search_label">Search events</string>
+    <string name="search_placeholder">Title or category, e.g. “Workshop”</string>
+    <string name="search_clear">Clear search</string>
+    <string name="search_icon">Search</string>
+    <string name="category_filters">Quick category filters</string>
+    <plurals name="results_all">
+        <item quantity="one">%d event</item>
+        <item quantity="other">%d events</item>
+    </plurals>
+    <plurals name="results_filtered">
+        <item quantity="one">%1$d of %2$d events matches “%3$s”</item>
+        <item quantity="other">%1$d of %2$d events match “%3$s”</item>
+    </plurals>
+    <string name="results_none">No events match “%1$s”</string>
+    <string name="empty_title">No matching events</string>
+    <string name="empty_body">Try a different word or clear the search to see every event.</string>
+    <string name="empty_clear_button">Clear search</string>
+    <string name="event_card_description">%1$s. %2$s at %3$s, %4$s. Opens event details.</string>
+
+    <!-- Event detail -->
+    <string name="detail_title">Event details</string>
+    <string name="navigate_up">Navigate up</string>
+    <string name="label_category">Category</string>
+    <string name="label_time">Date &amp; time</string>
+    <string name="label_location">Location</string>
+    <string name="label_about">About this event</string>
+    <string name="share_event">Share event</string>
+    <string name="share_event_chooser_title">Share event via</string>
+    <string name="share_unavailable">No app available to share this event</string>
+
+    <!-- Invalid event -->
+    <string name="event_unavailable_title">Event unavailable</string>
+    <string name="event_unavailable_body">We couldn’t find that event. It may have been removed, or the link you followed is incorrect.</string>
+    <string name="return_to_events">Return to events</string>
+</resources>
